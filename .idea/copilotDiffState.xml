@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CopilotDiffPersistence">
+    <option name="pendingDiffs">
+      <map>
+        <entry key="/KafkaConfig (snapshot).java">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="/KafkaConfig (snapshot).java" />
+              <option name="originalContent" value="package com.burak.order.config;&#10;&#10;import org.apache.kafka.clients.producer.ProducerConfig;&#10;import org.apache.kafka.common.serialization.StringSerializer;&#10;import org.springframework.context.annotation.Bean;&#10;import org.springframework.context.annotation.Configuration;&#10;import org.springframework.kafka.core.DefaultKafkaProducerFactory;&#10;import org.springframework.kafka.core.KafkaTemplate;&#10;import org.springframework.kafka.core.ProducerFactory;&#10;import org.springframework.kafka.support.serializer.JsonSerializer;&#10;&#10;import java.util.HashMap;&#10;import java.util.Map;&#10;&#10;@Configuration&#10;public class KafkaConfig {&#10;&#10;    @Bean&#10;    public ProducerFactory&lt;String, Object&gt; producerFactory() {&#10;        Map&lt;String, Object&gt; config = new HashMap&lt;&gt;();&#10;&#10;        config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, &quot;localhost:9092&quot;);&#10;        config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);&#10;        config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);&#10;&#10;        return new DefaultKafkaProducerFactory&lt;&gt;(config);&#10;    }&#10;&#10;    @Bean&#10;    public KafkaTemplate&lt;String, Object&gt; kafkaTemplate() {&#10;        return new KafkaTemplate&lt;&gt;(producerFactory());&#10;    }&#10;}&#10;" />
+              <option name="updatedContent" value="package com.burak.order.config;&#10;&#10;import com.burak.common.events.OrderCreatedEvent;&#10;import org.apache.kafka.clients.producer.ProducerConfig;&#10;import org.apache.kafka.common.serialization.StringSerializer;&#10;import org.springframework.context.annotation.Bean;&#10;import org.springframework.context.annotation.Configuration;&#10;import org.springframework.kafka.core.DefaultKafkaProducerFactory;&#10;import org.springframework.kafka.core.KafkaTemplate;&#10;import org.springframework.kafka.core.ProducerFactory;&#10;import org.springframework.kafka.support.serializer.JsonSerializer;&#10;&#10;import java.util.HashMap;&#10;import java.util.Map;&#10;&#10;@Configuration&#10;public class KafkaConfig {&#10;&#10;    @Bean&#10;    public ProducerFactory&lt;String, OrderCreatedEvent&gt; producerFactory() {&#10;        Map&lt;String, Object&gt; config = new HashMap&lt;&gt;();&#10;&#10;        config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, &quot;localhost:9092&quot;);&#10;        config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);&#10;        config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);&#10;&#10;        return new DefaultKafkaProducerFactory&lt;&gt;(config);&#10;    }&#10;&#10;    @Bean&#10;    public KafkaTemplate&lt;String, OrderCreatedEvent&gt; kafkaTemplate() {&#10;        return new KafkaTemplate&lt;&gt;(producerFactory());&#10;    }&#10;}" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>
