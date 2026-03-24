@@ -8,6 +8,7 @@
         <option value="$PROJECT_DIR$/common/pom.xml" />
         <option value="$PROJECT_DIR$/payment-service/pom.xml" />
         <option value="$PROJECT_DIR$/pom.xml" />
+        <option value="$PROJECT_DIR$/notification-service/src/main/java/com/burak/notification/pom.xml" />
       </list>
     </option>
   </component>

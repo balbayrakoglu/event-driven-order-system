@@ -2,6 +2,7 @@ spring:
   application:
     name: payment-service
 
+
   datasource:
     url: jdbc:postgresql://localhost:5432/orders
     username: user
@@ -22,3 +23,9 @@ spring:
     properties:
       spring.json.trusted.packages: "*"
 
+  logging:
+    pattern:
+      console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+server:
+  port: 8081

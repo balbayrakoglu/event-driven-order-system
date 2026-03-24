@@ -15,8 +15,7 @@ public class PaymentConsumer {
 
     @KafkaListener(
             topics = "order.created",
-            groupId = "payment-group",
-            containerFactory = "kafkaListenerContainerFactory"
+            groupId = "payment-group"
     )
     public void consume(OrderCreatedEvent event) {
         service.processPayment(event);

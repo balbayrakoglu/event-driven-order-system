@@ -9,16 +9,16 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class OrderService {
 
-    private final OrderRepository orderRepository;
+    private final OrderRepository repository;
+    private final OrderEventProducer producer;
 
-    private final OrderEventProducer orderEventProducer;
-
-    public Order createOrder(final String product, final BigDecimal amount) {
+    public Order createOrder(String product, BigDecimal amount) {
 
         Order order = Order.builder()
                 .product(product)
@@ -26,11 +26,19 @@ public class OrderService {
                 .status(OrderStatus.CREATED)
                 .createdAt(LocalDateTime.now())
                 .build();
-        Order saved = orderRepository.save(order);
 
-        orderEventProducer.sendOrderCreatedEvent(saved);
+        Order saved = repository.save(order);
+
+        producer.sendOrderCreated(saved);
 
         return saved;
     }
 
+    public void markAsPaid(final UUID orderId) {
+        Order order = repository.findById(orderId)
+                .orElseThrow();
+
+        order.setStatus(OrderStatus.PAID);
+        repository.save(order);
+    }
 }

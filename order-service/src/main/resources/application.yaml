@@ -3,7 +3,9 @@ spring:
     url: jdbc:postgresql://localhost:5432/orders
     username: user
     password: pass
-
+  logging:
+    pattern:
+      console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
   jpa:
     hibernate:
       ddl-auto: update
@@ -14,3 +16,5 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+server:
+  port: 8082

@@ -16,10 +16,14 @@
         <processorPath useClasspath="false">
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.32/lombok-1.18.32.jar" />
         </processorPath>
+        <module name="notification-service" />
         <module name="order-service" />
         <module name="payment-service" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="notification" target="1.8" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">

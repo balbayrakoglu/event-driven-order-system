@@ -6,16 +6,20 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+
 @Component
 @RequiredArgsConstructor
 public class OrderEventProducer {
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    public void sendOrderCreatedEvent(final Order order) {
+    public void sendOrderCreated(Order order) {
+
         OrderCreatedEvent event = new OrderCreatedEvent(
                 order.getId(),
-                order.getAmount()
+                order.getAmount(),
+                LocalDateTime.now()
         );
 
         kafkaTemplate.send(
