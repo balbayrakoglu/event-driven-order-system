@@ -15,7 +15,8 @@ public class NotificationConsumer {
     )
     public void consume(PaymentCompletedEvent event) {
 
-        log.info("Notification triggered for orderId={}", event.orderId());
-
+        log.info("event=NOTIFICATION_SENT orderId= {}", event.orderId());
+        // simulate email/SMS
+        log.info("Sending email for orderId={}", event.orderId());
     }
 }

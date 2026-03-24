@@ -12,7 +12,7 @@ public record OrderCreatedEvent(
 
     @Override
     public EventType type() {
-        return EventType.PAYMENT_COMPLETED;
+        return EventType.ORDER_CREATED;
     }
 }
 

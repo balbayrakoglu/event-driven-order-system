@@ -13,8 +13,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
-@Service
 @Slf4j
+@Service
 @RequiredArgsConstructor
 public class PaymentService {
 
@@ -24,11 +24,10 @@ public class PaymentService {
     @Retryable(maxAttempts = 3, backoff = @Backoff(delay = 2000))
     public void processPayment(OrderCreatedEvent event) {
 
-        log.info("Processing payment for orderId={}", event.orderId());
+        log.info("event=PAYMENT_START orderId={}", event.orderId());
 
         if (repository.existsByOrderId(event.orderId())) {
-            log.warn("Duplicate payment ignored for orderId={}", event.orderId());
-
+            log.warn("event=PAYMENT_DUPLICATE orderId={}", event.orderId());
             return;
         }
 
@@ -41,7 +40,7 @@ public class PaymentService {
 
         repository.save(payment);
 
-        log.info("Payment completed for orderId={}", event.orderId());
+        log.info("event=PAYMENT_SUCCESS orderId={}", event.orderId());
 
         PaymentCompletedEvent completedEvent =
                 new PaymentCompletedEvent(
