@@ -3,6 +3,7 @@ package com.burak.order.controller;
 import com.burak.order.controller.dto.CreateOrderRequest;
 import com.burak.order.controller.dto.OrderResponse;
 import com.burak.order.domain.Order;
+import com.burak.order.mapper.OrderMapper;
 import com.burak.order.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -13,27 +14,25 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@RequestMapping("/orders")
-@RequiredArgsConstructor
 @RestController
+@RequiredArgsConstructor
+@RequestMapping("/orders")
 public class OrderController {
 
-    private final OrderService orderService;
-
+    private final OrderService service;
+    private final OrderMapper mapper;
 
     @PostMapping
-    public ResponseEntity<OrderResponse> createOrder(@Valid @RequestBody CreateOrderRequest request) {
-        OrderResponse response = mapToResponse(orderService.createOrder(request.product(), request.amount()));
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
+    public ResponseEntity<OrderResponse> create(
+            @Valid @RequestBody CreateOrderRequest request) {
 
-    private OrderResponse mapToResponse(final Order order) {
-        return new OrderResponse(
-                order.getId(),
-                order.getProduct(),
-                order.getAmount(),
-                order.getStatus(),
-                order.getCreatedAt()
+        Order order = service.createOrder(
+                request.product(),
+                request.amount()
         );
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(mapper.toResponse(order));
     }
 }

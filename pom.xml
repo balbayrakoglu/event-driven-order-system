@@ -10,7 +10,6 @@
     <version>1.0.0</version>
     <packaging>pom</packaging>
 
-    <!-- 🔥 CRITICAL -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -29,7 +28,6 @@
         <java.version>21</java.version>
     </properties>
 
-    <!-- 🔥 INTERNAL MODULE VERSION MANAGEMENT -->
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -40,7 +38,6 @@
         </dependencies>
     </dependencyManagement>
 
-    <!-- 🔥 PLUGIN VERSION FIX -->
     <build>
         <pluginManagement>
             <plugins>
@@ -50,7 +47,7 @@
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>3.11.0</version>
                     <configuration>
-                        4.0.0source>
+                        <source>21</source>
                         <target>21</target>
                     </configuration>
                 </plugin>

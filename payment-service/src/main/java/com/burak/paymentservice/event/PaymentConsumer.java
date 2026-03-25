@@ -16,13 +16,13 @@ public class PaymentConsumer {
     private final PaymentService service;
 
     @KafkaListener(
-            topics = "order.created",
-            groupId = "payment-group",
-            containerFactory = "kafkaListenerContainerFactory"
+            topics = "${app.kafka.topics.order-created}",
+            groupId = "${spring.kafka.consumer.group-id}"
     )
     public void consume(OrderCreatedEvent event) {
 
-        log.info("event=ORDER_CREATED_RECEIVED orderId={}", event.orderId());
+        log.info("event=ORDER_CREATED_RECEIVED eventId={} orderId={}",
+                event.eventId(), event.orderId());
 
         service.processPayment(event);
     }

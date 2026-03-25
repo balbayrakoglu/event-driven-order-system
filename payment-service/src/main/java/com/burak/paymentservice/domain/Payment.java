@@ -1,5 +1,6 @@
 package com.burak.paymentservice.domain;
 
+import com.burak.common.events.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -8,6 +9,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
+@Table(name = "payments")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -19,12 +21,15 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(unique = true)
+    @Column(unique = true, nullable = false)
     private UUID orderId;
 
+    @Column(nullable = false)
     private BigDecimal amount;
 
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private PaymentStatus status;
 
+    @Column(nullable = false)
     private LocalDateTime createdAt;
 }

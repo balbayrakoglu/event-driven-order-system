@@ -2,18 +2,17 @@ spring:
   application:
     name: payment-service
 
-
-  datasource:
-    url: jdbc:postgresql://localhost:5432/orders
-    username: user
-    password: pass
-
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/orders}
+    username: ${DB_USER:user}
+    password: ${DB_PASS:pass}
 
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:9092}
     consumer:
       group-id: payment-group
       auto-offset-reset: earliest
@@ -29,3 +28,9 @@ spring:
 
 server:
   port: 8081
+
+app:
+  kafka:
+    topics:
+      order-created: order.created
+      payment-completed: payment.completed

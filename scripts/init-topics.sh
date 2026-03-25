@@ -1,15 +1,24 @@
 #!/bin/bash
 
-echo "Creating topics..."
+echo "Creating Kafka topics..."
 
-kafka-topics --create \
+docker exec -it kafka kafka-topics \
+  --create --if-not-exists \
   --topic order.created \
   --bootstrap-server localhost:9092 \
-  --partitions 3 \
-  --replication-factor 1
+  --partitions 3 --replication-factor 1
 
-kafka-topics --create \
-  --topic order.created.DLQ \
+docker exec -it kafka kafka-topics \
+  --create --if-not-exists \
+  --topic payment.completed \
   --bootstrap-server localhost:9092 \
-  --partitions 1 \
-  --replication-factor 1
+  --partitions 3 --replication-factor 1
+
+# Dead Letter Topics
+docker exec -it kafka kafka-topics \
+  --create --if-not-exists \
+  --topic order.created.DLT \
+  --bootstrap-server localhost:9092 \
+  --partitions 1 --replication-factor 1
+
+echo "Topics created."

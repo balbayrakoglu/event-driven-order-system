@@ -3,17 +3,13 @@ server:
 
 spring:
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:9092}
 
     consumer:
       group-id: notification-group
       auto-offset-reset: earliest
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
 
-    properties:
-      spring.json.trusted.packages: "*"
-  logging:
-    pattern:
-      console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
-
+app:
+  kafka:
+    topics:
+      payment-completed: payment.completed

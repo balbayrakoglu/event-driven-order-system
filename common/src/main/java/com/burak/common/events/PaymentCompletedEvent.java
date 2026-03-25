@@ -4,9 +4,11 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 public record PaymentCompletedEvent(
+        UUID eventId,
         UUID orderId,
-        String status,
-        LocalDateTime createdAt
+        PaymentStatus status,
+        LocalDateTime createdAt,
+        String version
 ) implements BaseEvent {
 
     @Override
