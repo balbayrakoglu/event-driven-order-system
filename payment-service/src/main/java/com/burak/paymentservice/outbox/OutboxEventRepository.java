@@ -3,11 +3,13 @@ package com.burak.paymentservice.outbox;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 @Repository
 public interface OutboxEventRepository extends JpaRepository<OutboxEvent, UUID> {
 
-    List<OutboxEvent> findTop50ByStatusOrderByCreatedAtAsc(OutboxStatus status);
+    List<OutboxEvent> findTop50ByStatusInAndNextRetryAtLessThanEqualOrderByCreatedAtAsc(List<OutboxStatus> statuses,
+                                                                                        LocalDateTime now);
 }

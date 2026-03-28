@@ -42,4 +42,10 @@ public class OutboxEvent {
 
     @Column(length = 1000)
     private String errorMessage;
+
+    @Column(nullable = false)
+    private Integer retryCount;
+
+    @Column(nullable = false)
+    private LocalDateTime nextRetryAt;
 }

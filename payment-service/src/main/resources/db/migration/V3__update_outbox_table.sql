@@ -1,0 +1,5 @@
+ALTER TABLE outbox_events
+    ADD COLUMN retry_count INT NOT NULL DEFAULT 0;
+
+ALTER TABLE outbox_events
+    ADD COLUMN next_retry_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP;

@@ -25,10 +25,14 @@ public class OutboxEventPublisher {
     @Value("${app.kafka.topics.order-created}")
     private String orderCreatedTopic;
 
+    private static final int MAX_RETRY = 3;
+    private static final long RETRY_DELAY_SECONDS = 30;
+
     @Scheduled(fixedDelay = 3000)
     @Transactional
     public void publishPendingEvents() {
-        List<OutboxEvent> events = repository.findTop50ByStatusOrderByCreatedAtAsc(OutboxStatus.NEW);
+        List<OutboxStatus> outBoxStatuses = List.of(OutboxStatus.NEW, OutboxStatus.FAILED);
+        List<OutboxEvent> events = repository.findTop50ByStatusInAndNextRetryAtLessThanEqualOrderByCreatedAtAsc(outBoxStatuses, LocalDateTime.now());
 
         for (OutboxEvent outboxEvent : events) {
             try {
@@ -43,17 +47,25 @@ public class OutboxEventPublisher {
                     outboxEvent.setProcessedAt(LocalDateTime.now());
                     outboxEvent.setErrorMessage(null);
 
-                    log.info("event=OUTBOX_PUBLISHED eventType={} aggregateId={}",
-                            outboxEvent.getEventType(), outboxEvent.getAggregateId());
+                    log.info("event=OUTBOX_PUBLISHED eventType={}  aggregateId={} retry={}",
+                            outboxEvent.getEventType(), outboxEvent.getAggregateId(), outboxEvent.getRetryCount());
                 }
 
             } catch (Exception ex) {
+                int newRetryCount = outboxEvent.getRetryCount() + 1;
+
+                outboxEvent.setRetryCount(newRetryCount);
                 outboxEvent.setStatus(OutboxStatus.FAILED);
                 outboxEvent.setProcessedAt(LocalDateTime.now());
                 outboxEvent.setErrorMessage(ex.getMessage());
 
-                log.error("event=OUTBOX_PUBLISH_FAILED outboxId={} aggregateId={}",
-                        outboxEvent.getId(), outboxEvent.getAggregateId(), ex);
+                if (newRetryCount < MAX_RETRY) {
+                    outboxEvent.setNextRetryAt(LocalDateTime.now().plusSeconds(RETRY_DELAY_SECONDS));
+                } else {
+                    outboxEvent.setNextRetryAt(LocalDateTime.MAX);
+                    log.error("event=OUTBOX_MAX_RETRY_REACHED retryCount={} outboxId={} aggregateId={}",
+                            newRetryCount, outboxEvent.getId(), outboxEvent.getAggregateId());
+                }
             }
         }
     }

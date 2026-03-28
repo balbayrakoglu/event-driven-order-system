@@ -56,6 +56,8 @@ public class OrderService {
                     .payload(objectMapper.writeValueAsString(event))
                     .status(OutboxStatus.NEW)
                     .createdAt(LocalDateTime.now())
+                    .retryCount(0)
+                    .nextRetryAt(LocalDateTime.now())
                     .build();
 
             outboxRepository.save(outboxEvent);
