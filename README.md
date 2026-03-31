@@ -1,83 +1,207 @@
 # Event-Driven Order System
 
-## Overview
-
-This project demonstrates a microservices-based event-driven system using:
-
-- Java 21
-- Spring Boot
-- Kafka
-- PostgreSQL
-- ELK Stack (Logging)
-
-## Services
-
-- Order Service
-- Payment Service
-- Notification Service
-
-## Architecture
-
-Event-driven communication via Kafka topics:
-
-- order.created
-- payment.completed
-
-## Run Infra
-
-```bash
-docker-compose -f infra/docker-compose.yml up -d
-
-./scripts/init-topics.sh
-
-mvn clean install
-
-cd order-service && mvn spring-boot:run
-cd payment-service && mvn spring-boot:run
-cd notification-service && mvn spring-boot:run
-
+A production-style distributed system demonstrating Event-Driven Architecture, Outbox Pattern, Retry Handling, and Saga
+Orchestration using Kafka.
 
 ---
 
-Logging
+## Overview
 
-Kibana:
-http://localhost:5601
+This project simulates a real-world order processing system built with microservices.
 
-Index:
-microservices-logs
+Services communicate asynchronously using Kafka and ensure data consistency using modern reliability patterns.
 
-Next Improvements
-Outbox Pattern
-Monitoring (Prometheus + Grafana)
-Distributed tracing
+---
 
-# 🧱 5) ROOT POM (MULTI-MODULE)
+## Services
 
-## 📁 `pom.xml`
+- order-service → handles order lifecycle
+- payment-service → processes payments
+- notification-service → placeholder
 
-```xml
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-         https://maven.apache.org/xsd/maven-4.0.0.xsd">
+---
 
-    <modelVersion>4.0.0</modelVersion>
+## Architecture
 
-    <groupId>com.burak</groupId>
-    <artifactId>event-driven-order-system</artifactId>
-    <version>1.0.0</version>
-    <packaging>pom</packaging>
+Event-driven architecture using Kafka.
 
-    <modules>
-        <module>common</module>
-        <module>order-service</module>
-        <module>payment-service</module>
-        <module>notification-service</module>
-    </modules>
+No direct service-to-service communication.
 
-    <properties>
-        <java.version>21</java.version>
-    </properties>
+---
 
-</project>
+## Core Patterns
+
+### Outbox Pattern
+
+- atomic DB + event write
+- solves dual-write problem
+
+---
+
+### Saga Pattern
+
+- choreography-based
+- no orchestrator
+- states:
+    - PAYMENT_PENDING → PAID
+    - PAYMENT_PENDING → FAILED
+
+---
+
+### Retry
+
+- retryCount
+- nextRetryAt
+- fixed delay
+- max retry
+
+---
+
+### Idempotency
+
+- safe duplicate handling
+
+---
+
+## Event Flow (Sequence)
+
+Client  
+↓  
+order-service  
+↓  
+Outbox  
+↓  
+Kafka  
+↓  
+payment-service
+
+SUCCESS → PaymentCompletedEvent → order-service → PAID  
+FAILURE → PaymentFailedEvent → order-service → FAILED
+
+---
+
+## Sequence Diagram (Text)
+
+Client -> OrderService : POST /orders  
+OrderService -> DB : save order  
+OrderService -> Outbox : save event  
+Outbox -> Kafka : publish
+
+Kafka -> PaymentService : OrderCreatedEvent
+
+PaymentService -> DB : save payment
+
+alt success  
+PaymentService -> Outbox : PaymentCompletedEvent  
+Kafka -> OrderService : PaymentCompletedEvent  
+OrderService -> DB : mark PAID  
+else failure  
+PaymentService -> Outbox : PaymentFailedEvent  
+Kafka -> OrderService : PaymentFailedEvent  
+OrderService -> DB : mark FAILED  
+end
+
+---
+
+## API Examples
+
+### Create Order
+
+POST /orders
+
+Request:
+{
+"product": "phone",
+"amount": 800
+}
+
+Response:
+{
+"orderId": "uuid",
+"status": "PAYMENT_PENDING"
+}
+
+---
+
+### Get Order
+
+GET /orders/{id}
+
+Response:
+{
+"orderId": "uuid",
+"status": "PAID"
+}
+
+---
+
+## Logs
+
+SUCCESS:
+event=ORDER_CREATED  
+event=PAYMENT_SUCCESS  
+event=ORDER_MARKED_PAID
+
+FAILURE:
+event=PAYMENT_FAILED  
+event=ORDER_MARKED_FAILED
+
+---
+
+## How to Run
+
+docker compose up --build
+
+---
+
+## Troubleshooting
+
+Database error:
+FATAL: database does not exist  
+→ create manually
+
+Kafka issues:
+→ check containers
+
+Events not processing:
+→ check outbox table
+
+---
+
+## Interview Explanation (IMPORTANT)
+
+This project demonstrates:
+
+- how to solve dual-write problem → Outbox
+- how to handle failure → Saga
+- how to ensure delivery → Retry
+- how to handle duplicates → Idempotency
+
+Typical explanation:
+
+"When an order is created, we persist both order and event in same transaction.  
+A background publisher sends the event to Kafka.  
+Payment service processes it and emits success or failure event.  
+Order service reacts accordingly.  
+This ensures eventual consistency without distributed transactions."
+
+---
+
+## Limitations
+
+- no DLQ
+- no correlationId
+- no observability
+- fixed retry
+
+---
+
+## Purpose
+
+Focused demonstration of core distributed system patterns.
+
+---
+
+## Final Note
+
+This is a clean and complete demo project suitable for interviews and architecture discussions.

@@ -2,6 +2,7 @@ package com.burak.paymentservice.service;
 
 import com.burak.common.events.OrderCreatedEvent;
 import com.burak.common.events.PaymentCompletedEvent;
+import com.burak.common.events.PaymentFailedEvent;
 import com.burak.common.events.PaymentStatus;
 import com.burak.paymentservice.domain.Payment;
 import com.burak.paymentservice.outbox.OutboxEvent;
@@ -32,6 +33,20 @@ public class PaymentService {
     public void processPayment(OrderCreatedEvent event) {
         log.info("event=PAYMENT_START orderId={} eventId={}", event.orderId(), event.eventId());
 
+        boolean paymentSuccess = simulatePaymentResult(event);
+
+        if (paymentSuccess) {
+            handleSuccessfulPayment(event);
+        } else {
+            handleFailedPayment(event, "PAYMENT_DECLINED");
+        }
+    }
+
+    private boolean simulatePaymentResult(OrderCreatedEvent event) {
+        return Math.random() > 0.5;
+    }
+
+    private void handleSuccessfulPayment(OrderCreatedEvent event) {
         PaymentCompletedEvent paymentCompletedEvent = new PaymentCompletedEvent(
                 UUID.randomUUID(),
                 event.orderId(),
@@ -50,18 +65,30 @@ public class PaymentService {
 
             repository.saveAndFlush(payment);
 
-            saveOutboxEvent(event.orderId(), paymentCompletedEvent);
+            saveCompletedOutboxEvent(event.orderId(), paymentCompletedEvent);
 
             log.info("event=PAYMENT_SUCCESS orderId={}", event.orderId());
 
         } catch (DataIntegrityViolationException ex) {
             log.warn("event=PAYMENT_DUPLICATE orderId={} reason=unique_constraint", event.orderId());
 
-            saveOutboxEvent(event.orderId(), paymentCompletedEvent);
+            saveCompletedOutboxEvent(event.orderId(), paymentCompletedEvent);
         }
     }
 
-    private void saveOutboxEvent(UUID aggregateId, PaymentCompletedEvent event) {
+    private void handleFailedPayment(OrderCreatedEvent event, String reason) {
+        PaymentFailedEvent paymentFailedEvent = new PaymentFailedEvent(
+                event.orderId(),
+                reason
+        );
+
+        saveFailedOutboxEvent(event.orderId(), paymentFailedEvent);
+
+        log.warn("event=PAYMENT_FAILED_CREATED orderId={} reason={}",
+                event.orderId(), reason);
+    }
+
+    private void saveCompletedOutboxEvent(UUID aggregateId, PaymentCompletedEvent event) {
         try {
             OutboxEvent outboxEvent = OutboxEvent.builder()
                     .id(UUID.randomUUID())
@@ -82,6 +109,30 @@ public class PaymentService {
 
         } catch (JsonProcessingException e) {
             throw new IllegalStateException("Failed to serialize PaymentCompletedEvent", e);
+        }
+    }
+
+    private void saveFailedOutboxEvent(UUID aggregateId, PaymentFailedEvent event) {
+        try {
+            OutboxEvent outboxEvent = OutboxEvent.builder()
+                    .id(UUID.randomUUID())
+                    .aggregateId(aggregateId)
+                    .aggregateType("PAYMENT")
+                    .eventType("PAYMENT_FAILED")
+                    .payload(objectMapper.writeValueAsString(event))
+                    .status(OutboxStatus.NEW)
+                    .createdAt(LocalDateTime.now())
+                    .retryCount(0)
+                    .nextRetryAt(LocalDateTime.now())
+                    .build();
+
+            outboxRepository.save(outboxEvent);
+
+            log.info("event=OUTBOX_SAVED eventType={} aggregateId={}",
+                    outboxEvent.getEventType(), outboxEvent.getAggregateId());
+
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("Failed to serialize PaymentFailedEvent", e);
         }
     }
 }

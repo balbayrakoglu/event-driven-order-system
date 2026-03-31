@@ -88,4 +88,26 @@ public class OrderService {
 
         }, () -> log.warn("event=ORDER_NOT_FOUND orderId={} skipping", orderId));
     }
+
+    @Transactional
+    public void markAsFailed(UUID orderId) {
+        repository.findById(orderId).ifPresentOrElse(order -> {
+
+            if (order.getStatus() == OrderStatus.PAID) {
+                log.warn("event=ORDER_ALREADY_PAID_SKIP orderId={}", orderId);
+                return;
+            }
+
+            if (order.getStatus() == OrderStatus.FAILED) {
+                log.info("event=ORDER_ALREADY_FAILED orderId={}", orderId);
+                return;
+            }
+
+            order.setStatus(OrderStatus.FAILED);
+            repository.save(order);
+
+            log.info("event=ORDER_MARKED_FAILED orderId={}", orderId);
+
+        }, () -> log.warn("event=ORDER_NOT_FOUND orderId={} skipping", orderId));
+    }
 }
